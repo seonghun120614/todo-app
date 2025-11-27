@@ -2,4 +2,4 @@ spring:
   application:
     name: todo-back
   profiles:
-    active: ${SPRING_BOOT_ACTIVE_PROFILE}
+    active: ${PROFILE:dev}

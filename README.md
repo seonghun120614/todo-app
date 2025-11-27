@@ -56,6 +56,22 @@ tasks.named('bootBuildImage') {
 docker images               # 확인
 ```
 
+또한 gradle 문법을 사용하면 다음과 같이 인자로도 받을 수 있다.
+
+```gradle
+tasks.named('bootBuildImage') {
+    def imgName = project.hasProperty('imageName')
+            ? project.property('imageName')
+            : 'todo-back:latest'
+    imageName = imgName
+    environment = [
+            "BP_JVM_VERSION": "21"
+    ]
+}
+```
+
+project 는 예약된 변수인 듯하다(추후에 공부 더 필요).
+
 #### Nginx 의 기본 홈페이지 경로
 
 `/usr/share/nginx/html/`
@@ -68,6 +84,14 @@ docker images               # 확인
 
 - db 이름과 테이블 이름은 각각 \`${}\` 형식을 쓴다.
 - 문자열 안에 넣고자 할때 '${}' 을 쓴다
+
+#### nginx.conf 환경마다 달리 가져가기
+
+만약 `/usr/share/nginx/html/nginx.conf` 에 설정파일이 위치되어 있다고 하면 `Dockerfile` 에서 아래와 같이 가져가면 될 듯하다.
+
+```bash
+CMD ["sh", "-c", "nginx -c /usr/share/nginx/html/nginx-${PROFILE}.conf -g 'daemon off;'"]
+```
 
 ### 라이선스
 

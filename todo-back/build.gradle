@@ -35,6 +35,16 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+tasks.named('bootBuildImage') {
+    def imgName = project.hasProperty('imageName')
+            ? project.property('imageName')
+            : 'todo-back:latest'
+    imageName = imgName
+    environment = [
+            "BP_JVM_VERSION": "21"
+    ]
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
