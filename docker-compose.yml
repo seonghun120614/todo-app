@@ -1,0 +1,44 @@
+services:
+  front:
+    image: todo-front:0.1
+    container_name: todo-front
+    environment:
+      - PROFILE=${PROFILE}
+    ports:
+      - 80:80
+    networks:
+      - front-back-net
+    depends_on:
+      - back
+
+  back:
+    image: todo-back:0.1
+    container_name: todo-back
+    environment:
+      - SPRING_PROFILES_ACTIVE=${PROFILE}
+      - SPRING_DATASOURCE_URL=jdbc:mysql://todo-mysql:3306/${MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=true&serverTimezone=Asia/Seoul
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - front-back-net
+      - back-db-net
+    depends_on:
+      - db
+    restart: on-failure
+
+  db:
+    image: todo-mysql:0.1
+    container_name: todo-mysql
+    environment:
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    networks:
+      - back-db-net
+
+networks:
+  front-back-net:
+    driver: bridge
+  back-db-net:
+    driver: bridge

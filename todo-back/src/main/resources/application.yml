@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: todo-back
+  profiles:
+    active: ${PROFILE:dev}
