@@ -1,0 +1,8 @@
+USE todo_db;
+CREATE TABLE IF NOT EXISTS todos (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    todo VARCHAR(255) NOT NULL,
+    complete TINYINT(1) DEFAULT 0
+);
+
+GRANT ALL PRIVILEGES ON todo_db.todos TO 'todo_user'@'%';
