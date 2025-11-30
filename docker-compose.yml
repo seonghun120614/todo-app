@@ -1,41 +1,54 @@
 services:
-  front:
-    image: todo-front:0.1
-    container_name: todo-front
-    environment:
-      - PROFILE=${PROFILE}
-    ports:
-      - 80:80
-    networks:
-      - front-back-net
-    depends_on:
-      - back
-
-  back:
-    image: todo-back:0.1
-    container_name: todo-back
-    environment:
-      - SPRING_PROFILES_ACTIVE=${PROFILE}
-      - SPRING_DATASOURCE_URL=jdbc:mysql://todo-mysql:3306/${MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=true&serverTimezone=Asia/Seoul
-      - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
-      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
-    networks:
-      - front-back-net
-      - back-db-net
-    depends_on:
-      - db
-    restart: on-failure
-
-  db:
-    image: todo-mysql:0.1
-    container_name: todo-mysql
+  todo-db:
+    build:
+      context: ${DB_NAME}
+      dockerfile: Dockerfile
+    image: ${DB_NAME}:${DB_VERSION}
+    container_name: ${DB_NAME}
     environment:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
     networks:
       - back-db-net
+
+  todo-back:
+    build:
+      context: ${BACK_NAME}
+      dockerfile: Dockerfile
+    image: ${BACK_NAME}:${BACK_VERSION}
+    container_name: ${BACK_NAME}
+    depends_on:
+      todo-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://todo-db:3306/${MYSQL_DATABASE}?allowPublicKeyRetrieval=true&useSSL=true
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - front-back-net
+      - back-db-net
+
+  todo-front:
+    build:
+      context: ${FRONT_NAME}
+      dockerfile: Dockerfile
+    image: ${FRONT_NAME}:${FRONT_VERSION}
+    container_name: ${FRONT_NAME}
+    environment:
+      BACK_NAME: ${BACK_NAME}
+    ports:
+      - 80:80
+    networks:
+      - front-back-net
+    depends_on:
+      - todo-back
 
 networks:
   front-back-net:

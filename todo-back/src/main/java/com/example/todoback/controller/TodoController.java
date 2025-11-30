@@ -31,7 +31,7 @@ public class TodoController {
 	@PutMapping(consumes={ "plain/text" })
 	public ResponseEntity<TodoDto> updateTodo(
 			@RequestParam long todoId,
-			@RequestBody String todoDto) {
+			@RequestBody String title) {
 		return null;
 	}
 

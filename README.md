@@ -16,7 +16,7 @@
 **구동 방법**
 
 ```bash
-
+./CICD.sh
 ```
 
 ### API
@@ -27,6 +27,7 @@
 - `DELETE /api/todos/{id}` (삭제)
 
 ### 시나리오
+
 
 
 ### 배운 점
@@ -80,17 +81,57 @@ project 는 예약된 변수인 듯하다(추후에 공부 더 필요).
 
 `/docker-entrypoint-initdb.d/` 폴더에 있는 `.sql`, `.sh`, `.sql.gz` 를 자동으로 실행
 
-#### .sql 파일에서 환경변수 불러올 때
-
-- db 이름과 테이블 이름은 각각 \`${}\` 형식을 쓴다.
-- 문자열 안에 넣고자 할때 '${}' 을 쓴다
-
 #### nginx.conf 환경마다 달리 가져가기
 
 만약 `/usr/share/nginx/html/nginx.conf` 에 설정파일이 위치되어 있다고 하면 `Dockerfile` 에서 아래와 같이 가져가면 될 듯하다.
 
 ```bash
 CMD ["sh", "-c", "nginx -c /usr/share/nginx/html/nginx-${PROFILE}.conf -g 'daemon off;'"]
+```
+
+#### DBeaver(디비버) Public Key Retrieval is not allowed
+
+MySQL JDBC 연결 문자열에 붙여 쓰는 파라미터들이며, `DBeaver` 에서 MySQL 접속 시 자주 보는 오류인 `Public Key Retrieval is not allowed` 를 해결하는 설정이다.
+
+오류 원인은 MySQL 8.x 이상에서 `caching_sha2_password` 인증 방식을 사용할 때, 클라이언트(`DBeaver`, ...) 가 서버로부터 암호화용 public key를 자동으로 받아오는 기능이 기본적으로 금지되어 있다.
+
+아래 처럼 public key 자동 요청이 필요한 상황이면 오류가 뜬다:
+- `useSSL=false` 또는 SSL 이 제대로 설정 안되어 있으면 에러
+- MySQL 서버가 RSA 공개키 파일을 제공하지 않으면 에러
+
+이를 다음과 같이 해결한다.
+
+```yml
+allowPublicKeyRetrieval=true&useSSL=true
+```
+
+- `allowPublicKeyRetrieval=true` : 서버에서 RSA 공개키를 자동으로 가져오는 것을 허용, public key 를 받아와서 암호를 암호화한 수 전송 가능, 보안성이 떨어지기 때문에 SSL 을 켜지 않은 경우 위험
+- `useSSL=true`: MySQL 클라이언트와 서버 사이 통신 시 SSL/TLS 암호화 사용
+
+#### DB 와 Back Container 간의 실행 시각 조정
+
+시간 상 DB 가 구동되는 시간보다 Back Container 가 구동되는 시간이 더 클 수 있다.  
+이때 사용할 수 있는게 healthcheck 이며, back 은 db 가 service healthy 한지 체크 후에  
+정상적으로 구동이 시작된다.
+
+```docker
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+...
+    depends_on:
+      db:
+        condition: service_healthy
+```
+
+#### WebMvcTest
+
+테스트를 하기 위해 다른 layer 를 올릴 필요 없이 테스트를 수행하고 싶다면 다음 애노테이션을 사용하자.
+
+```java
+@WebMvcTest(TodoController.class)
 ```
 
 ### 라이선스
