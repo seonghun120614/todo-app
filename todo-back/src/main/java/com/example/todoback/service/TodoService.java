@@ -7,6 +7,6 @@ import java.util.List;
 public interface TodoService {
 	List<Todo> getAll();
 	Todo plan(String todo);
-	Todo update(long todoId);
+	Todo update(long todoId, String todo, boolean completed);
 	Todo delete(long todoId);
 }

@@ -17,7 +17,7 @@ public class TodoServiceImpl implements TodoService {
 	}
 
 	@Override
-	public Todo update(long todoId) {
+	public Todo update(long todoId, String todo, boolean completed) {
 		return null;
 	}
 

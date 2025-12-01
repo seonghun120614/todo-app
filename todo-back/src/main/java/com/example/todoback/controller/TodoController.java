@@ -31,7 +31,8 @@ public class TodoController {
 	@PutMapping(consumes={ "plain/text" })
 	public ResponseEntity<TodoDto> updateTodo(
 			@RequestParam long todoId,
-			@RequestBody String title) {
+			@RequestBody String title,
+			@RequestParam boolean completed) {
 		return null;
 	}
 
